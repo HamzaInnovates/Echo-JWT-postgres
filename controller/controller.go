@@ -16,8 +16,21 @@ import (
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+type UserController interface {
+	GetUserData(c echo.Context) error
+	AddUserData(c echo.Context) error
+	UpdateUserData(c echo.Context) error
+	DeleteUserData(c echo.Context) error
+	GetUser(c echo.Context) error
+	AuthenticateUser(c echo.Context) error
+}
+type Usercontrollerimplementation struct{}
 
-func GetUserData(c echo.Context) error {
+func NewUserController() UserController {
+	return &Usercontrollerimplementation{}
+}
+
+func (u *Usercontrollerimplementation) GetUserData(c echo.Context) error {
 	var users []models.User
 	if err := config.DB.Find(&users).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{"Failed to fetch users"})
@@ -25,7 +38,7 @@ func GetUserData(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-func AddUserData(c echo.Context) error {
+func (u *Usercontrollerimplementation) AddUserData(c echo.Context) error {
 	var user models.User
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{"Invalid input"})
@@ -43,7 +56,7 @@ func AddUserData(c echo.Context) error {
 	return c.JSON(http.StatusCreated, user)
 }
 
-func UpdateUserData(c echo.Context) error {
+func (u *Usercontrollerimplementation) UpdateUserData(c echo.Context) error {
 	var user models.User
 	UserID := c.Param("id")
 
@@ -68,7 +81,7 @@ func UpdateUserData(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func DeleteUserData(c echo.Context) error {
+func (u *Usercontrollerimplementation) DeleteUserData(c echo.Context) error {
 	var user models.User
 	UserID := c.Param("id")
 
@@ -80,7 +93,7 @@ func DeleteUserData(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "User deleted successfully"})
 }
 
-func GetUser(c echo.Context) error {
+func (u *Usercontrollerimplementation) GetUser(c echo.Context) error {
 	UserID := c.Param("id")
 	var user models.User
 
@@ -91,7 +104,7 @@ func GetUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func AuthenticateUser(c echo.Context) error {
+func (u *Usercontrollerimplementation) AuthenticateUser(c echo.Context) error {
 	var credentials struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
